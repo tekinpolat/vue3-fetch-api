@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+        <title>Postlar</title>
+        <style>
+            [v-cloak] {
+                display: none;
+            }
+              
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="index.html">API</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            
+                            <li class="nav-item">
+                                <a class="nav-link" href="user.html">Users</a>
+                            </li>
+                        </ul>
+                        <form class="d-flex">
+                            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                            <button class="btn btn-outline-success" type="submit">Search</button>
+                        </form>
+                    </div>
+                </div>
+            </nav>
+        </div>
+
+        <div class="container" id="post-app" v-cloak>
+            <div class="row my-3">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            Users Post
+                            <button class="btn btn-sm btn-success float-end" @click="postAddIsShow =!postAddIsShow">
+                                <i class="fas fa-plus"></i> ADD
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3" v-if="postAddIsShow || postEditIsShow">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="input-group mb-3 input-group-lg">
+                                <span class="input-group-text">
+                                    <i class="fas fa-heading"></i>
+                                </span>
+                                <input type="text" class="form-control" placeholder="Title ..." v-model="post.title">
+                            </div>   
+                            <div class="input-group mb-3 input-group-lg">
+                                <span class="input-group-text">
+                                    <i class="far fa-clipboard"></i>
+                                </span>
+                                <input type="text" class="form-control" placeholder="Body ..." v-model="post.body">
+                            </div>   
+                            
+                            <div class="input-group mb-3 input-group-lg" v-if="postAddIsShow" @click="addPost()">
+                                <button type="submit" class="btn btn-outline-success btn-lg w-100">
+                                    <i class="fas fa-plus"></i> ADD
+                                </button>
+                            </div> 
+                            <div class="input-group mb-3 input-group-lg" v-else @click="editPostStepLast()">
+                                <button type="submit" class="btn btn-outline-warning btn-lg w-100">
+                                    <i class="fas fa-edit"></i> EDİT
+                                </button>
+                            </div>   
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table">
+                        <thead>
+                            <tr class="table-primary">
+                                <th>#</th>
+                                <th>Title</th>
+                                <th>Body</th>
+                                <th>
+                                    
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="post in posts" :key="post.id">
+                                <th>{{post.id}}</th>
+                                <td class="table-success">{{post.title}}</td>
+                                <td>{{post.body}}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger mr-2" @click="postDelete(post)">
+                                        <i class="far fa-trash-alt"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-warning mr-2 text-white" @click="postEdit(post)">
+                                        <i class="far fa-edit"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    {{posts}}
+                </div>
+            </div>
+        </div>
+        <!-- Option 1: Bootstrap Bundle with Popper -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://unpkg.com/vue@next"></script>
+        <script src="js/constant.js"></script>
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('user-id');
+            const postApp = {
+                data() {
+                    return {
+                        postAddIsShow   : false,
+                        postEditIsShow  : false,
+                        posts           : [],
+                        post            : {id:0, title:'', body:'' },
+                    };
+                },
+                methods: {  
+                    getPost(){
+                        fetch(`${BASE_URL}/posts`)
+                        .then(response => response.json())
+                        .then(data => {
+                            this.posts = data.filter(user => user.userId == userId)
+                        })
+                    },
+                    postDelete(post){
+                        fetch(`${BASE_URL}/posts/${post.id}`, {method: 'DELETE'})
+                          .then(res => res.json())
+                          .then(res => {
+                              this.posts = this.posts.filter(post_data => post_data.id != post.id)
+                          })
+                    },
+                    addPost(){
+                        console.log("POST")
+                        fetch(`${BASE_URL}/posts`, 
+                                {
+                                    method: 'POST', 
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify(this.post)
+                                }
+                        )
+                          .then(res => res.json())
+                          .then(res => {
+                              this.posts.unshift(res)
+                              this.post = {id:0, title:'', body:'' }
+                          })
+                    },
+                    postEdit(post_data){ 
+                        this.post = post_data;
+                        this.postAddIsShow = false;
+                        this.postEditIsShow = true;
+                        //const post = this.posts.filter(post_data => post_data.id == postdata.id)
+                        //console.log(post)
+                        //if(post.length > 0){
+                        //    this.post.id = post[0].id;
+                        //    this.post.title = post[0].title;
+                        //    this.post.body = post[0].body;
+                        //}
+                    },
+                    editPostStepLast(){
+                        fetch(`${BASE_URL}/posts/${this.post.id}`, {
+                            method: 'PUT',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(this.post),
+                          })
+                          .then(response => response.json())
+                          .then(data => {
+                            console.log('Success:', data);
+                            this.postEditIsShow = false;
+                            this.post = {id:0, title:'', body:'' }
+                          })
+                          .catch((error) => {
+                            console.error('Error:', error);
+                          });
+                    }
+                },
+                created(){
+                    this.getPost();
+                }
+            };
+
+            Vue.createApp(postApp).mount("#post-app");
+        </script>
+    </body>
+</html>

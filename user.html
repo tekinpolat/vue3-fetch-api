@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+        <title>VUE3 API</title>
+        <style>
+            [v-cloak] {
+                display: none;
+            }
+              
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+                    <a class="navbar-brand" href="index.html">API</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            
+                            <li class="nav-item">
+                                <a class="nav-link" href="user.html">Users</a>
+                            </li>
+                            
+                        </ul>
+                        <form class="d-flex">
+                            <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                            <button class="btn btn-outline-success" type="submit">Search</button>
+                        </form>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <div class="container my-2">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-body">
+                            Users Information
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container" id="user-app" v-cloak>
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table">
+                        <thead>
+                            <tr class="table-primary">
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Adres</th>
+                                <th>Phone</th>
+                                <th>
+                                    
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="user in users" :key="user.id">
+                                <th>{{user.id}}</th>
+                                <td>{{user.name}}</td>
+                                <td>{{user.username}}</td>
+                                <td class="table-success">{{user.email}}</td>
+                                <td>
+                                    {{user.address.street}} {{user.address.suite}} {{user.address.city}} - {{user.address.zipcode}}
+                                </td>
+                                <td>{{user.phone}}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger mr-2" @click="userDelete(user)">
+                                        <i class="far fa-trash-alt"></i>
+                                    </button>
+                                    <a class="btn btn-sm btn-success" :href="'post.html?user-id='+user.id">
+                                        <i class="far fa-address-card"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                      </table>
+                    {{users}}
+                </div>
+            </div>
+        </div>
+        <!-- Option 1: Bootstrap Bundle with Popper -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+
+        <!-- Option 2: Separate Popper and Bootstrap JS -->
+        <!--
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.min.js"></script>
+        -->
+        <script src="https://unpkg.com/vue@next"></script>
+        <script src="js/constant.js"></script>
+        <script>
+            const usersApp = {
+                data() {
+                    return {
+                        users: [],
+                    };
+                },
+                methods: {  
+                    getUsers(){
+                        fetch(`${BASE_URL}/users`)
+                        .then(response => response.json())
+                        .then(data => this.users = data)
+                    },
+                    userDelete(user_delete){
+                        fetch(`${BASE_URL}/users/${user_delete.id}`, {method: 'DELETE'})
+                          .then(res => res.json())
+                          .then(res => {
+                              this.users = this.users.filter(user => user.id != user_delete.id)
+                          })
+                    }
+                },
+                created(){
+                    this.getUsers();
+                }
+            };
+
+            Vue.createApp(usersApp).mount("#user-app");
+        </script>
+    </body>
+</html>
